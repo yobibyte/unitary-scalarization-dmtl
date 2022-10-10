@@ -1,0 +1,2 @@
+python3.8 supervised_experiments/train_multi_task.py --label celeba_testeval_rangraddrop_0.75_wdm4 --optimizer ran-graddrop --dataset celeba --batch_size 128 --lr 0.001 --decay_lr --num_epochs 50 --store_models --weight_decay 1e-4 --dropout --random_seed 1 --n_runs 3 --p 0.75
+python3.8 supervised_experiments/train_multi_task.py --label celeba_testeval_graddrop_wdm4 --optimizer graddrop --dataset celeba --batch_size 128 --lr 0.001 --decay_lr --num_epochs 50 --store_models --weight_decay 1e-4 --dropout --random_seed 1 --n_runs 3

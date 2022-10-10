@@ -1,0 +1,15 @@
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_baseline_wdm5 --optimizer baseline --dataset cityscapes --batch_size 32 --lr 5e-4 --weight_decay 1e-5 --num_epochs 100 --random_seed 1 --n_runs 3
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_imtl_wdm5 --optimizer imtl --dataset cityscapes --batch_size 32 --lr 5e-4 --weight_decay 1e-5 --num_epochs 100 --random_seed 3 --n_runs 1
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_mgda-ub --optimizer mgda-ub --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 100 --random_seed 3 --n_runs 1
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_graddrop --optimizer graddrop --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 100 --random_seed 1 --n_runs 3
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_pcgrad_wdm5 --optimizer pcgrad --dataset cityscapes --batch_size 32 --lr 5e-4 --weight_decay 1e-5 --num_epochs 100 --random_seed 1 --n_runs 3
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_rlw-dirichlet --optimizer rlw-dirichlet --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 100 --random_seed 1 --n_runs 3
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_testeval_rlw-normal --optimizer rlw-normal --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 100 --random_seed 1 --n_runs 3
+
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_baseline --optimizer baseline --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_imtl --optimizer imtl --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_mgda-ub --optimizer mgda-ub --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_graddrop --optimizer graddrop --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_pcgrad --optimizer pcgrad --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_rlw-dirichlet --optimizer rlw-dirichlet --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
+python3.8 supervised_experiments/train_multi_task.py --label cityscapes_timenewsplit_rlw-normal --optimizer rlw-normal --dataset cityscapes --batch_size 32 --lr 5e-4 --num_epochs 1 --random_seed 1 --n_runs 10 --time_measurement_exp
