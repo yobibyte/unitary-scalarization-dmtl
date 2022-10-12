@@ -124,6 +124,7 @@ def train_multi_task(args, random_seed):
         else:
             mtl_opt = Baseline(optimizer)
 
+    stats_frequency = 100
     best_result = {k: -float("inf") for k in model_saver}  # Something to maximize.
     train_val_stats = []  # saving validation stats per epoch
     tasks = configs[args.dataset]['tasks']
@@ -136,22 +137,31 @@ def train_multi_task(args, random_seed):
             model[m].train()
 
         losses_per_epoch = {t: 0.0 for t in tasks}
-        for batch in train_loader:
+        norm_sum_grads = 0.
+        for cidx, batch in enumerate(train_loader):
             n_iter += 1
             # Read targets and images for the batch.
             images = batch[0].to(DEVICE)
             labels = {t: batch[i+1].to(DEVICE) for i, t in enumerate(tasks)}
 
             # Compute per-task losses.
-            losses = []
-            rep, _ = model['rep'](images, None)
-            del images
-            for t in tasks:
-                out_t, _ = model[t](rep, None)
-                # the losses are averaged within the MTL optimizers, possibly after manipulations per datapoint
-                loss_t = loss_fn[t](out_t, labels[t], average=False)
-                losses.append(loss_t)  # to backprop on
-                losses_per_epoch[t] += loss_t.mean().detach()  # for logging purposes
+            def losses_from_model(cmodel, average=False):
+                losses = []
+                rep, _ = cmodel['rep'](images, None)
+                for t in tasks:
+                    out_t, _ = cmodel[t](rep, None)
+                    # the losses are averaged within the MTL optimizers, possibly after manipulations per datapoint
+                    loss_t = loss_fn[t](out_t, labels[t], average=average)
+                    losses.append(loss_t)  # to backprop on
+                return losses, rep
+
+            losses, rep = losses_from_model(model)
+            for idx, t in enumerate(tasks):
+                losses_per_epoch[t] += losses[idx].mean().detach()  # for logging purposes
+
+            if ((cidx - 1) % stats_frequency) == 0 and args.store_convergence_stats:
+                c_norm_sum_grads, shared = mtl_opt.compute_norm_sum_grads(losses)
+                norm_sum_grads += c_norm_sum_grads
 
             mtl_opt.iterate(losses, shared_repr=rep)
 
@@ -173,7 +183,12 @@ def train_multi_task(args, random_seed):
         for t in tasks:
             clog += ' train_loss {} = {:5.4f}'.format(t, losses_per_epoch[t] / n_iter)
         logger.info(clog)
-        epoch_stats = {}
+        if args.store_convergence_stats:
+            epoch_stats = {
+                'norm_sum_grads': norm_sum_grads / (n_iter/stats_frequency),
+            }
+        else:
+            epoch_stats = {}
         for i, t in enumerate(tasks):
             epoch_stats[f"train_loss_{t}"] = losses_per_epoch[t] / n_iter
 
@@ -271,6 +286,8 @@ if __name__ == '__main__':
     parser.add_argument('--decay_lr', action='store_true', help='Whether to decay the lr with the epochs.')
     parser.add_argument('--dropout', action='store_true', help='Whether to use additional dropout in training.')
     parser.add_argument('--no_dropout', action='store_true', help='Whether to not use dropout at all.')
+    parser.add_argument('--store_convergence_stats', action='store_true',
+                        help='Whether to store the squared norm of the unitary scalarization gradient at that point')
     parser.add_argument('--weight_decay', type=float, default=0.0, help='L2 regularization.')
     parser.add_argument('--n_runs', type=int, default=1, help='Number of experiment repetitions.')
     parser.add_argument('--random_seed', type=int, default=1, help='Start random seed to employ for the run.')

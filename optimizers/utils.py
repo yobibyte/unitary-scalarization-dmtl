@@ -17,6 +17,19 @@ class MTLOptimizer:
     def optimizer(self):
         return self._optim
 
+    def do_store_norm_sum_grads(self):
+        self.store_norm_sum_grads = True
+
+    def compute_norm_sum_grads(self, objectives):
+        # NOTE: involves an additional backward pass per task, but it's just for logging (done less frequently)
+        # return l2 norm of sum of original grads on the shared parameters (requires additional backward)
+        if objectives[0].dim() > 0 and objectives[0].shape[0] > 1:
+            objectives = [obj.mean(dim=0) for obj in objectives]
+        grad, _, shared = self._pack_grad(objectives, retain_graph=True)
+        norm_sum_grads = torch.sqrt(sum([g_i[shared] for g_i in grad]).pow(2).sum())
+        self.zero_grad()
+        return norm_sum_grads, shared
+
     def zero_grad(self):
         '''
         clear the gradient of the parameters
@@ -79,7 +92,7 @@ class MTLOptimizer:
                 idx += 1
         return
 
-    def _pack_grad(self, objectives):
+    def _pack_grad(self, objectives, retain_graph=False):
         '''
         pack the gradient of the parameters of the network for each objective
 
@@ -93,7 +106,7 @@ class MTLOptimizer:
         m = len(objectives)
         for idx, obj in enumerate(objectives):
             self._optim.zero_grad(set_to_none=True)
-            obj.backward(retain_graph=(idx < (m-1)))
+            obj.backward(retain_graph=(idx < (m-1)) or retain_graph)
             grad, shape, has_grad = self._retrieve_grad()
             grads.append(self._flatten_grad(grad, shape))
             # Infer which parameters are shared and which aren't

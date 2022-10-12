@@ -1,8 +1,49 @@
 # In Defense of the Unitary Scalarization for Deep Multi-Task Learning
 
-Source code for "In Defense of the Unitary Scalarization for Deep Multi-Task Learning".
+With [In Defense of the Unitary Scalarization for Deep Multi-Task Learning](https://arxiv.org/pdf/2201.04122), we show that a basic multi-task learning optimizer performs on par with specialized algorithms and suggest a possible explanation based on regularization.
+This repository contains all the code necessary to replicate the findings described in the paper.
 
-## Supervised Experiments
+### TL;DR
+Our advice to practitioners is the following: 
+_before adapting multi-task optimizers to the use-case at hand, or designing a new one, test whether optimizing for the 
+sum of the losses, along with standard regularization and stabilization techniques from the literature 
+(e.g., early stopping, weight decay, dropout), attains the target performance._ 
+
+### BibTeX
+If you use our code in your research, please cite:
+```
+@inproceedings{Kurin2022,
+    title={In Defense of the Unitary Scalarization for Deep Multi-Task Learning},
+    author={Kurin, Vitaly and De Palma, Alessandro and Kostrikov, Ilya and Whiteson, Shimon and Kumar, M. Pawan},
+    booktitle={Neural Information Processing Systems},
+    year={2022}
+}
+```
+
+### Available Multi-Task Optimizers
+
+The code provides implementations for the following multi-task optimizers: 
+- Unitary Scalarization (`Baseline`, optimizing the sum of the losses): our **recommended** optimizer 
+(*to be possibly paired with single-task regularization/stabilization techniques*);
+- [PCGrad](http://arxiv.org/abs/2001.06782) (`PCGrad`);
+- [MGDA](http://arxiv.org/abs/1810.04650) (`MGDA`);
+- [IMTL](https://openreview.net/forum?id=IMPnRXEWpvr) (`IMTL`)
+- [GradDrop](https://arxiv.org/abs/2010.06808) (`GradDrop`)
+- [RLW](http://arxiv.org/abs/2111.10603) (`RLW`).
+
+The optimizers are implemented under a unified interface, defined by the `MTLOptimizer` class in `optimizers/utils.py`.
+The class is initialized from a PyTorch optimizer (and possibly method-dependent arguments). This optimizer will be used
+to step on the "modified" gradient defined by the chosen multi-task optimizer.  
+The `MTLOptimizer` class exposes the `iterate` method 
+which, given a list of per-task losses and possibly the shared representation (for encoder-decoder architectures), updates
+network parameters in-place according to the chosen multi-task optimizer.
+For usage examples see `supervised_experiments/train_multi_task.py`.
+
+All optimizers can be coupled with standard regularization and stabilization techniques by relying on the relative 
+standard PyTorch implementations. For instance, l2 regularization can be used by passing a PyTorch optimizer with
+non-null `weight_decay` to the initializer of the chosen `MTLOptimizer` child class. 
+
+## Supervised Learning Experiments
 
 ### Code setup
 
@@ -21,7 +62,9 @@ The datasets can be downloaded from:
 - CelebA: [here](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) (23G)
 
 ### Running the code
-
+The `scripts` folder contains script to reproduce each of the SL experiments. 
+The experiments of section 4.1 can be reproduced by using `scripts/mnist.sh`, `scripts/celeba.sh`, and `scripts/cityscapes.sh`.
+Those in section 5 can be replicated via `scripts/regularization_celeba.sh`.
 ```
 cd rct
 # Set DATA_FOLDER to point to the directory containing celeba/ and cityscapes/ (see Datasets above) 
