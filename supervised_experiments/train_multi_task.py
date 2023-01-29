@@ -128,7 +128,6 @@ def train_multi_task(args, random_seed):
     best_result = {k: -float("inf") for k in model_saver}  # Something to maximize.
     train_val_stats = []  # saving validation stats per epoch
     tasks = configs[args.dataset]['tasks']
-    n_iter = 0
     for epoch in range(args.num_epochs):
         start = timer()
         print('Epoch {} Started'.format(epoch))
@@ -137,6 +136,7 @@ def train_multi_task(args, random_seed):
             model[m].train()
 
         losses_per_epoch = {t: 0.0 for t in tasks}
+        n_iter = 0
         norm_sum_grads = 0.
         for cidx, batch in enumerate(train_loader):
             n_iter += 1
